@@ -100,14 +100,26 @@ int main()
 
 	// ”казывание вершин (и буферов) и настройка вершинных атрибутов
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // лева€ вершина
-		 0.5f, -0.5f, 0.0f, // права€ вершина
-		 0.0f,  0.5f, 0.0f  // верхн€€ вершина   
+	 0.5f,  0.5f, 0.0f,  // верхн€€ права€
+	 0.5f, -0.5f, 0.0f,  // нижн€€ права€
+	-0.5f, -0.5f, 0.0f,  // нижн€€ лева€
+	-0.5f,  0.5f, 0.0f   // верхн€€ лева€ 
+	};
+
+	//  ак объедин€ть вершины
+	unsigned int indices[] = {  // помните, что мы начинаем с 0!
+		0, 1, 3, // первый треугольник
+		1, 2, 3  // второй треугольник
 	};
 
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// —начала св€зываем объект вершинного массива, затем св€зываем и устанавливаем вершинный буфер(ы), и затем конфигурируем вершинный атрибут(ы)
 	glBindVertexArray(VAO);
@@ -142,7 +154,8 @@ int main()
 		// –исуем наш первый треугольник
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // поскольку у нас есть только один Vјќ, то нет необходимости св€зывать его каждый раз (но мы сделаем это, чтобы всЄ было немного организованнее)
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		// glBindVertexArray(0); // не нужно каждый раз его отв€зывать
 
 		// glfw: обмен содержимым front- и back- буферов. ќтслеживание событий ввода\вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
