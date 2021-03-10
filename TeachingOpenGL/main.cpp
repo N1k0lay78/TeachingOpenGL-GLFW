@@ -22,6 +22,8 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "{\n"
 "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}\n\0";
+bool is_filling_polugon = true;
+bool is_mode_changed = false;
 
 int main()
 {
@@ -151,6 +153,13 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// смена режима отрисовки
+		if (is_filling_polugon) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		} else {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+
 		// Рисуем наш первый треугольник
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // поскольку у нас есть только один VАО, то нет необходимости связывать его каждый раз (но мы сделаем это, чтобы всё было немного организованнее)
@@ -177,6 +186,13 @@ void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !is_mode_changed) {
+		is_filling_polugon = !is_filling_polugon;
+		is_mode_changed = true;
+	}
+	else if (!glfwGetKey(window, GLFW_KEY_SPACE)) {
+		is_mode_changed = false;
+	}
 }
 
 // glfw: всякий раз, когда изменяются размеры окна (пользователем или операционной системой), вызывается данная callback-функция
