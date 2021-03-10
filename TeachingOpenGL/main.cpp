@@ -16,12 +16,28 @@ const char* vertexShaderSource = "#version 330 core\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
-const char* fragmentShaderSource = "#version 330 core\n"
+
+const char* orangeFragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
 "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 "}\n\0";
+
+const char* redFragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(1.0f, 0.2f, 0.2f, 1.0f);\n"
+"}\n\0";
+
+const char* blueFragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(0.2f, 0.2f, 1f, 1.0f);\n"
+"}\n\0";
+
 bool is_filling_polugon = true;
 bool is_mode_changed = false;
 
@@ -73,55 +89,130 @@ int main()
 	}
 
 	// ‘рагментный шейдер
-	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+	int orangeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(orangeFragmentShader, 1, &orangeFragmentShaderSource, NULL);
+	glCompileShader(orangeFragmentShader);
 
 	// ѕроверка на наличие ошибок компилировани€ фрагментного шейдера
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(orangeFragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		glGetShaderInfoLog(orangeFragmentShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+
+	// ‘рагментный шейдер
+	int redFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(redFragmentShader, 1, &redFragmentShaderSource, NULL);
+	glCompileShader(redFragmentShader);
+
+	// ѕроверка на наличие ошибок компилировани€ фрагментного шейдера
+	glGetShaderiv(redFragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(redFragmentShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+
+	// ‘рагментный шейдер
+	int blueFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(blueFragmentShader, 1, &blueFragmentShaderSource, NULL);
+	glCompileShader(blueFragmentShader);
+
+	// ѕроверка на наличие ошибок компилировани€ фрагментного шейдера
+	glGetShaderiv(blueFragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(blueFragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
 	// —в€зывание шейдеров
-	int shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
+	int orangeShaderProgram = glCreateProgram();
+	int redShaderProgram = glCreateProgram();
+	int blueShaderProgram = glCreateProgram();
+	glAttachShader(orangeShaderProgram, vertexShader);
+	glAttachShader(redShaderProgram, vertexShader);
+	glAttachShader(blueShaderProgram, vertexShader);
+	glAttachShader(orangeShaderProgram, orangeFragmentShader);
+	glAttachShader(redShaderProgram, redFragmentShader);
+	glAttachShader(blueShaderProgram, blueFragmentShader);
+	glLinkProgram(orangeShaderProgram);
+	glLinkProgram(redShaderProgram);
+	glLinkProgram(blueShaderProgram);
 
 	// ѕроверка на наличие ошибок компилировани€ св€зывани€ шейдеров
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	glGetProgramiv(orangeShaderProgram, GL_LINK_STATUS, &success);
 	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		glGetProgramInfoLog(orangeShaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 	}
+
+	// ѕроверка на наличие ошибок компилировани€ св€зывани€ шейдеров
+	glGetProgramiv(redShaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(redShaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
+
+	// ѕроверка на наличие ошибок компилировани€ св€зывани€ шейдеров
+	glGetProgramiv(blueShaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(blueShaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
+
 	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	glDeleteShader(orangeFragmentShader);
+	glDeleteShader(redFragmentShader);
+	glDeleteShader(blueFragmentShader);
 
 	// ”казывание вершин (и буферов) и настройка вершинных атрибутов
 	float vertices[] = {
-	 0.5f,  0.5f, 0.0f,  // верхн€€ права€
-	 0.5f, -0.5f, 0.0f,  // нижн€€ права€
-	-0.5f, -0.5f, 0.0f,  // нижн€€ лева€
-	-0.5f,  0.5f, 0.0f   // верхн€€ лева€ 
+	0.5f,  0.5f, 0.0f,  // верхн€€ права€                   0
+	0.5f, -0.5f, 0.0f,  // нижн€€ права€                    1
+	-0.5f, -0.5f, 0.0f,  // нижн€€ лева€                    2
+	-0.5f,  0.5f, 0.0f,  // верхн€€ лева€                   3
+	0.0f, 0.85f, 0.0f,   // верхн€€ посередине              4
+	0.2f, 0.2f, 0.0f,    // права€ верхн€€ часть окна       5
+	0.2f, -0.2f, 0.0f,   // права€ нижн€€ часть окна        6
+	-0.2f, -0.2f, 0.0f,  // лева€ нижн€€ часть окна         7 
+	-0.2f, 0.2f, 0.0f,   // лева€ верхн€€ часть окна        8
 	};
 
 	//  ак объедин€ть вершины
-	unsigned int indices[] = {  // помните, что мы начинаем с 0!
+	unsigned int homeIndices[] = {  // дом
 		0, 1, 3, // первый треугольник
 		1, 2, 3  // второй треугольник
+	};
+
+	unsigned int roofIndices[] = { // крыша
+		0, 3, 4  // крыша
+	};
+
+	unsigned int windowIndices[] = { // окно
+		5, 6, 7,  // пловина окна
+		5, 7, 8
 	};
 
 	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 
-	unsigned int EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	unsigned int homeEBO;
+	glGenBuffers(1, &homeEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, homeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(homeIndices), homeIndices, GL_STATIC_DRAW);
+
+	unsigned int roofEBO;
+	glGenBuffers(1, &roofEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(roofIndices), roofIndices, GL_STATIC_DRAW);
+
+	unsigned int windowEBO;
+	glGenBuffers(1, &windowEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(windowIndices), windowIndices, GL_STATIC_DRAW);
 
 	// —начала св€зываем объект вершинного массива, затем св€зываем и устанавливаем вершинный буфер(ы), и затем конфигурируем вершинный атрибут(ы)
 	glBindVertexArray(VAO);
@@ -161,10 +252,20 @@ int main()
 		}
 
 		// –исуем наш первый треугольник
-		glUseProgram(shaderProgram);
+		glUseProgram(orangeShaderProgram);
 		glBindVertexArray(VAO); // поскольку у нас есть только один Vјќ, то нет необходимости св€зывать его каждый раз (но мы сделаем это, чтобы всЄ было немного организованнее)
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, homeEBO);
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+		glUseProgram(redShaderProgram);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+		glUseProgram(blueShaderProgram);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+
 		// glBindVertexArray(0); // не нужно каждый раз его отв€зывать
 
 		// glfw: обмен содержимым front- и back- буферов. ќтслеживание событий ввода\вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
