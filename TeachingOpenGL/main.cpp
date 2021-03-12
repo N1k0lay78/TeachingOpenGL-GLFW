@@ -267,6 +267,19 @@ int main()
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, textureRoofRoof);
 
+	glm::vec3 cubePositions[] = {
+	    glm::vec3(0.0f,  0.0f,  0.0f),
+	    glm::vec3(2.0f,  5.0f, -15.0f),
+	    glm::vec3(-1.5f, -2.2f, -2.5f),
+	    glm::vec3(-3.8f, -2.0f, -12.3f),
+	    glm::vec3(2.4f, -0.4f, -3.5f),
+	    glm::vec3(-1.7f,  3.0f, -7.5f),
+	    glm::vec3(1.3f, -2.0f, -2.5f),
+	    glm::vec3(1.5f,  2.0f, -2.5f),
+	    glm::vec3(1.5f,  0.2f, -1.5f),
+	    glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	// Цикл рендеринга
 	while (!glfwWindowShouldClose(window))
 	{
@@ -284,57 +297,60 @@ int main()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		}
 
-		// Рисуем наш первый треугольник
-		myShader.use();
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			// Рисуем наш первый треугольник
+			myShader.use();
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
-		glm::mat4 view = glm::mat4(1.0f);
-		// Обратите внимание, что мы перемещаем сцену в направлении, обратном направлению предполагаемого движения
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			glm::mat4 view = glm::mat4(1.0f);
+			// Обратите внимание, что мы перемещаем сцену в направлении, обратном направлению предполагаемого движения
+			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
 
-		glm::mat4 projection;
-		projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+			glm::mat4 projection;
+			projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
-		int modelLoc = glGetUniformLocation(myShader.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			int modelLoc = glGetUniformLocation(myShader.ID, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		int viewLoc = glGetUniformLocation(myShader.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+			int viewLoc = glGetUniformLocation(myShader.ID, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-		int projectionLoc = glGetUniformLocation(myShader.ID, "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+			int projectionLoc = glGetUniformLocation(myShader.ID, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-		myShader.setInt("texture1", 0);
-		glBindVertexArray(VAO); // поскольку у нас есть только один VАО, то нет необходимости связывать его каждый раз (но мы сделаем это, чтобы всё было немного организованнее)
-		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-		//lUseProgram(shaderProgram);
-		//glUniform4f(vertexColorLocation, 1.0f, 0.5f, 0.2f, 1.0f);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, homeEBO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			myShader.setInt("texture1", 0);
+			glBindVertexArray(VAO); // поскольку у нас есть только один VАО, то нет необходимости связывать его каждый раз (но мы сделаем это, чтобы всё было немного организованнее)
+			//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+			//lUseProgram(shaderProgram);
+			//glUniform4f(vertexColorLocation, 1.0f, 0.5f, 0.2f, 1.0f);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, homeEBO);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		myShader.use();
-		myShader.setInt("texture1", 2);
-		//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		myShader.use();
-		//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			myShader.use();
+			myShader.setInt("texture1", 2);
+			//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			myShader.use();
+			//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		myShader.use();
-		myShader.setInt("texture1", 1);
-		//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			myShader.use();
+			myShader.setInt("texture1", 1);
+			//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		myShader.use();
-		myShader.setInt("texture1", 3);
-		//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofRoofEBO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
+			myShader.use();
+			myShader.setInt("texture1", 3);
+			//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofRoofEBO);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		}
 
 		// glBindVertexArray(0); // не нужно каждый раз его отвязывать
 
