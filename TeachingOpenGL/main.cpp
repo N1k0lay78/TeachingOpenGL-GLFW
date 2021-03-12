@@ -203,6 +203,8 @@ int main()
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, textureRoof);
 
+	// trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
+
 	// Раскомментируйте следующую строку для отрисовки полигонов в режиме каркаса
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// Цикл рендеринга
@@ -224,6 +226,11 @@ int main()
 
 		// Рисуем наш первый треугольник
 		myShader.use();
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
+		unsigned int transformLoc = glGetUniformLocation(myShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 		myShader.setInt("texture1", 0);
 		glBindVertexArray(VAO); // поскольку у нас есть только один VАО, то нет необходимости связывать его каждый раз (но мы сделаем это, чтобы всё было немного организованнее)
 		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
