@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Исходные файлы\shaders">
+      <UniqueIdentifier>{36e7f67f-431c-4fa5-84c7-0b37cf01480f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\shaders\vertex">
+      <UniqueIdentifier>{6b470e03-e16d-488f-894a-dd46d35cc067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\shaders\fragment">
+      <UniqueIdentifier>{278a5f42-c4a6-4ab6-b9f7-532124e098ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,5 +30,18 @@
     <ClCompile Include="..\OpenGL\GLAD\src\glad.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shader.h">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ver_1.vs">
+      <Filter>Исходные файлы\shaders\vertex</Filter>
+    </None>
+    <None Include="frag_1.fs">
+      <Filter>Исходные файлы\shaders\fragment</Filter>
+    </None>
   </ItemGroup>
 </Project>
