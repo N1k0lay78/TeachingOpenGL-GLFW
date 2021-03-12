@@ -48,6 +48,7 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+	glEnable(GL_DEPTH_TEST);
 
 	//  омпилирование нашей шейдерной программы
 	Shader myShader("ver_1.vs", "frag_1.fs");
@@ -131,32 +132,83 @@ int main()
 		stbi_image_free(data);
 	}
 
+	unsigned int textureRoofRoof;
+	glGenTextures(1, &textureRoofRoof);
+	glBindTexture(GL_TEXTURE_2D, textureRoofRoof);
+
+	// ”станавливаем параметры наложени€ и фильтрации текстур (дл€ текущего св€занного объекта текстуры)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	{
+		int width, height, nrChannels;
+		// «агрузка и генераци€ текстуры
+		// stbi_set_flip_vertically_on_load(true);
+		unsigned char *data = stbi_load("../Source/texture/roof.png", &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+		}
+		stbi_image_free(data);
+	};
+
 	// ”казывание вершин (и буферов) и настройка вершинных атрибутов
 	float vertices[] = {
-	0.5f,  0.5f, 0.0f, 1.0f, 1.0f,  // верхн€€ права€                   0
-	0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // нижн€€ права€                    1
-	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  // нижн€€ лева€                    2
-	-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  // верхн€€ лева€                   3
-	0.0f, 0.85f, 0.0f, 0.0f, 0.5f,   // верхн€€ посередине              4
-	0.35f, 0.35f, 0.0f, 1.0f, 1.0f,    // права€ верхн€€ часть окн      5
-	0.35f, -0.35f, 0.0f, 1.0f, 0.0f,   // права€ нижн€€ часть окна      6
-	-0.35f, -0.35f, 0.0f, 0.0f, 0.0f,  // лева€ нижн€€ часть окна       7 
-	-0.35f, 0.35, 0.0f, 0.0f, 1.0f,   // лева€ верхн€€ часть окна       8
+	0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  // верхн€€ права€                   0-
+	0.5f, -0.5f, 1.0f, 1.0f, 0.0f,  // нижн€€ права€                    1
+	-0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  // нижн€€ лева€                    2
+	-0.5f,  0.5f, 1.0f, 0.0f, 1.0f,  // верхн€€ лева€                   3
+	0.0f, 0.85f, 1.0f, 0.0f, 0.5f,   // верхн€€ посередине              4-
+	0.35f, 0.35f, 1.001f, 1.0f, 1.0f,    // права€ верхн€€ часть окн    5
+	0.35f, -0.35f, 1.001f, 1.0f, 0.0f,   // права€ нижн€€ часть окна    6
+	-0.35f, -0.35f, 1.001f, 0.0f, 0.0f,  // лева€ нижн€€ часть окна     7 
+	-0.35f, 0.35f, 1.001f, 0.0f, 1.0f,   // лева€ верхн€€ часть окна    8
+	0.5f,  0.5f, -1.0f, 0.0f, 1.0f,  // верхн€€ права€                  9-
+	0.5f, -0.5f, -1.0f, 0.0f, 0.0f,  // нижн€€ права€                   10
+	-0.5f, -0.5f, -1.0f, 1.0f, 0.0f,  // нижн€€ лева€                   11
+	-0.5f,  0.5f, -1.0f, 1.0f, 1.0f,  // верхн€€ лева€                  12
+	0.0f, 0.85f, -1.0f, 1.0f, 0.5f,   // верхн€€ посередине            13-
 	};
 
 	//  ак объедин€ть вершины
 	unsigned int homeIndices[] = {  // дом
 		0, 1, 3, // первый треугольник
-		1, 2, 3  // второй треугольник
+		1, 2, 3,  // второй треугольник
+		0, 1, 9,
+		9, 10, 1,
+		9, 10, 12,
+		10, 11, 12,
+		2, 3, 11,
+		3, 11, 12,
 	};
 
 	unsigned int roofIndices[] = { // крыша
-		0, 3, 4  // крыша
+		0, 3, 4,  // крыша
+		9, 12, 13,
+	};
+
+	unsigned int roofRoofIndices[] = { // крыша
+		0, 4, 9,
+		9, 4, 13,
+		3, 4, 12,
+		12, 4, 13,
 	};
 
 	unsigned int windowIndices[] = { // окно
 		5, 6, 7,  // пловина окна
 		5, 7, 8
+	};
+
+	unsigned int floorIndices[] = { // окно
+		1, 2, 10,
+		10, 11, 2,
 	};
 
 	unsigned int VBO, VAO;
@@ -191,10 +243,20 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(roofIndices), roofIndices, GL_STATIC_DRAW);
 
+	unsigned int roofRoofEBO;
+	glGenBuffers(1, &roofRoofEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofRoofEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(roofRoofIndices), roofRoofIndices, GL_STATIC_DRAW);
+
 	unsigned int windowEBO;
 	glGenBuffers(1, &windowEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(windowIndices), windowIndices, GL_STATIC_DRAW);
+
+	unsigned int floorEBO;
+	glGenBuffers(1, &floorEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureHome);
@@ -202,11 +264,9 @@ int main()
 	glBindTexture(GL_TEXTURE_2D, textureWindow);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, textureRoof);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, textureRoofRoof);
 
-	// trans = glm::scale(trans, glm::vec3(1.0, 1.0, 1.0));
-
-	// –аскомментируйте следующую строку дл€ отрисовки полигонов в режиме каркаса
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// ÷икл рендеринга
 	while (!glfwWindowShouldClose(window))
 	{
@@ -215,7 +275,7 @@ int main()
 
 		// –ендеринг
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// смена режима отрисовки
 		if (is_filling_polugon) {
@@ -226,30 +286,54 @@ int main()
 
 		// –исуем наш первый треугольник
 		myShader.use();
-		glm::mat4 trans = glm::mat4(1.0f);
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-		unsigned int transformLoc = glGetUniformLocation(myShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+
+		glm::mat4 view = glm::mat4(1.0f);
+		// ќбратите внимание, что мы перемещаем сцену в направлении, обратном направлению предполагаемого движени€
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+		int modelLoc = glGetUniformLocation(myShader.ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+		int viewLoc = glGetUniformLocation(myShader.ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		int projectionLoc = glGetUniformLocation(myShader.ID, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 		myShader.setInt("texture1", 0);
 		glBindVertexArray(VAO); // поскольку у нас есть только один Vјќ, то нет необходимости св€зывать его каждый раз (но мы сделаем это, чтобы всЄ было немного организованнее)
 		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		//lUseProgram(shaderProgram);
 		//glUniform4f(vertexColorLocation, 1.0f, 0.5f, 0.2f, 1.0f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, homeEBO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		myShader.use();
 		myShader.setInt("texture1", 2);
 		//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		myShader.use();
+		//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorEBO);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		myShader.use();
 		myShader.setInt("texture1", 1);
 		//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+		myShader.use();
+		myShader.setInt("texture1", 3);
+		//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofRoofEBO);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
 		// glBindVertexArray(0); // не нужно каждый раз его отв€зывать
