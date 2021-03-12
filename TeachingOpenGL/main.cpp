@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include "Shader.h"
+#include "stb_image.h"
 
 #include <iostream>
 
@@ -47,17 +49,96 @@ int main()
 	//  омпилирование нашей шейдерной программы
 	Shader myShader("ver_1.vs", "frag_1.fs");
 
+	unsigned int textureHome;
+	glGenTextures(1, &textureHome);
+	glBindTexture(GL_TEXTURE_2D, textureHome);
+
+	// ”станавливаем параметры наложени€ и фильтрации текстур (дл€ текущего св€занного объекта текстуры)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	{
+		// «агрузка и генераци€ текстуры
+		int width, height, nrChannels;
+		unsigned char *data = stbi_load("../Source/texture/brick.jpg", &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+		}
+		stbi_image_free(data);
+	}
+	unsigned int textureWindow;
+	glGenTextures(1, &textureWindow);
+	glBindTexture(GL_TEXTURE_2D, textureWindow);
+
+	// ”станавливаем параметры наложени€ и фильтрации текстур (дл€ текущего св€занного объекта текстуры)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	{
+		int width, height, nrChannels;
+		// «агрузка и генераци€ текстуры
+		stbi_set_flip_vertically_on_load(true);
+		unsigned char *data = stbi_load("../Source/texture/window.jpeg", &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+		}
+		stbi_image_free(data);
+	}
+
+	unsigned int textureRoof;
+	glGenTextures(1, &textureRoof);
+	glBindTexture(GL_TEXTURE_2D, textureRoof);
+
+	// ”станавливаем параметры наложени€ и фильтрации текстур (дл€ текущего св€занного объекта текстуры)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	{
+		int width, height, nrChannels;
+		// «агрузка и генераци€ текстуры
+		// stbi_set_flip_vertically_on_load(true);
+		unsigned char *data = stbi_load("../Source/texture/wood.jpg", &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+		}
+		stbi_image_free(data);
+	}
+
 	// ”казывание вершин (и буферов) и настройка вершинных атрибутов
 	float vertices[] = {
-	0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  // верхн€€ права€                   0
-	0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f,  // нижн€€ права€                    1
-	-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f,  // нижн€€ лева€                    2
-	-0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  // верхн€€ лева€                   3
-	0.0f, 0.85f, 0.0f, 0.0f, 0.0f, 1.0f,   // верхн€€ посередине              4
-	0.2f, 0.2f, 0.0f, 0.2f, 0.2f, 1.0f,    // права€ верхн€€ часть окна       5
-	0.2f, -0.2f, 0.0f, 0.2f, 0.2f, 1.0f,   // права€ нижн€€ часть окна        6
-	-0.2f, -0.2f, 0.0f, 0.2f, 0.2f, 1.0f,  // лева€ нижн€€ часть окна         7 
-	-0.2f, 0.2f, 0.0f, 0.2f, 0.2f, 1.0f,   // лева€ верхн€€ часть окна        8
+	0.5f,  0.5f, 0.0f, 1.0f, 1.0f,  // верхн€€ права€                   0
+	0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // нижн€€ права€                    1
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  // нижн€€ лева€                    2
+	-0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  // верхн€€ лева€                   3
+	0.0f, 0.85f, 0.0f, 0.0f, 0.5f,   // верхн€€ посередине              4
+	0.35f, 0.35f, 0.0f, 1.0f, 1.0f,    // права€ верхн€€ часть окн      5
+	0.35f, -0.35f, 0.0f, 1.0f, 0.0f,   // права€ нижн€€ часть окна      6
+	-0.35f, -0.35f, 0.0f, 0.0f, 0.0f,  // лева€ нижн€€ часть окна       7 
+	-0.35f, 0.35, 0.0f, 0.0f, 1.0f,   // лева€ верхн€€ часть окна       8
 	};
 
 	//  ак объедин€ть вершины
@@ -84,10 +165,10 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	// ќбратите внимание, что данное действие разрешено, вызов glVertexAttribPointer() зарегистрировал VBO как прив€занный вершинный буферный объект дл€ вершинного атрибута, так что после этого мы можем спокойно выполнить отв€зку
@@ -112,9 +193,15 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(windowIndices), windowIndices, GL_STATIC_DRAW);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureHome);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textureWindow);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, textureRoof);
+
 	// –аскомментируйте следующую строку дл€ отрисовки полигонов в режиме каркаса
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	// ÷икл рендеринга
 	while (!glfwWindowShouldClose(window))
 	{
@@ -134,6 +221,7 @@ int main()
 
 		// –исуем наш первый треугольник
 		myShader.use();
+		myShader.setInt("texture1", 0);
 		glBindVertexArray(VAO); // поскольку у нас есть только один Vјќ, то нет необходимости св€зывать его каждый раз (но мы сделаем это, чтобы всЄ было немного организованнее)
 		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		//lUseProgram(shaderProgram);
@@ -142,11 +230,13 @@ int main()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		myShader.use();
+		myShader.setInt("texture1", 2);
 		//glUniform4f(vertexColorLocation, 1.0f, 0.2f, 0.2f, 1.0f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, roofEBO);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
 		myShader.use();
+		myShader.setInt("texture1", 1);
 		//glUniform4f(vertexColorLocation, 0.2f, 0.2f, 1.0f, 1.0f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, windowEBO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
