@@ -6,6 +6,7 @@
 
 #include "Shader.h"
 #include "stb_image.h"
+#include "free_move_camera.h"
 
 #include <iostream>
 
@@ -25,17 +26,11 @@ bool is_filling_polugon = true;
 bool is_mode_changed = false;
 
 // camera
-float yaw = -90.0f;
-float pitch = 0.0f;
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::mat4 view;
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
 
-
-// mouse
-float lastX = SCR_WIDTH / 2, lastY = SCR_HEIGHT / 2;
-float fov = 60;
 
 // delatime
 float deltaTime = 0.0f;	// время между текущим и последним кадрами
@@ -336,12 +331,11 @@ int main()
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
 			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+			
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-			glm::mat4 view = glm::mat4(1.0f);
-			view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-			glm::mat4 projection;
-			projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+			glm::mat4 view = camera.GetViewMatrix();
+			
 
 			int modelLoc = glGetUniformLocation(myShader.ID, "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -415,15 +409,14 @@ void processInput(GLFWwindow* window)
 		is_mode_changed = false;
 	}
 
-	float cameraSpeed = 4.0f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
 // glfw: всякий раз, когда изменяются размеры окна (пользователем или операционной системой), вызывается данная callback-функция
@@ -436,36 +429,23 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
 	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	float yoffset = lastY - ypos; // перевернуто, так как y-координаты идут снизу вверх
+
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.05;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 direction;
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(direction);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (fov > 1.0f && fov < 45.0f)
-		fov -= yoffset;
-	else if (fov <= 1.0f)
-		fov = 1.0f;
-	else if (fov >= 45.0f)
-		fov = 45.0f;
+	camera.ProcessMouseScroll(yoffset);
 }
