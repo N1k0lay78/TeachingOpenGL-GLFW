@@ -10,7 +10,12 @@
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+// inputs
 void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+
 
 // Константы
 const unsigned int SCR_WIDTH = 800;
@@ -18,6 +23,23 @@ const unsigned int SCR_HEIGHT = 600;
 
 bool is_filling_polugon = true;
 bool is_mode_changed = false;
+
+// camera
+float yaw = -90.0f;
+float pitch = 0.0f;
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::mat4 view;
+
+
+// mouse
+float lastX = SCR_WIDTH / 2, lastY = SCR_HEIGHT / 2;
+float fov = 60;
+
+// delatime
+float deltaTime = 0.0f;	// время между текущим и последним кадрами
+float lastFrame = 0.0f; // время последнего кадра
 
 int main()
 {
@@ -279,10 +301,20 @@ int main()
 	    glm::vec3(1.5f,  0.2f, -1.5f),
 	    glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
+	
+	// mouse settings
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 
 	// Цикл рендеринга
 	while (!glfwWindowShouldClose(window))
 	{
+		// eval delta
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		// Обработка ввода
 		processInput(window);
 
@@ -306,11 +338,10 @@ int main()
 			model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
 
 			glm::mat4 view = glm::mat4(1.0f);
-			// Обратите внимание, что мы перемещаем сцену в направлении, обратном направлению предполагаемого движения
-			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f));
+			view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 			glm::mat4 projection;
-			projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+			projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
 
 			int modelLoc = glGetUniformLocation(myShader.ID, "model");
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -371,8 +402,11 @@ int main()
 // Обработка всех событий ввода: запрос GLFW о нажатии/отпускании кнопки мыши в данном кадре и соответствующая обработка данных событий
 void processInput(GLFWwindow* window)
 {
+	// зыкрыть окно
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	// изменить режим просмотра
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !is_mode_changed) {
 		is_filling_polugon = !is_filling_polugon;
 		is_mode_changed = true;
@@ -380,6 +414,16 @@ void processInput(GLFWwindow* window)
 	else if (!glfwGetKey(window, GLFW_KEY_SPACE)) {
 		is_mode_changed = false;
 	}
+
+	float cameraSpeed = 4.0f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 // glfw: всякий раз, когда изменяются размеры окна (пользователем или операционной системой), вызывается данная callback-функция
@@ -388,4 +432,40 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// Убеждаемся, что окно просмотра соответствует новым размерам окна.
 	// Обратите внимание, что высота будет значительно больше, чем указано, на Retina-дисплеях
 	glViewport(0, 0, width, height);
+}
+
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.05;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(direction);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (fov > 1.0f && fov < 45.0f)
+		fov -= yoffset;
+	else if (fov <= 1.0f)
+		fov = 1.0f;
+	else if (fov >= 45.0f)
+		fov = 45.0f;
 }
