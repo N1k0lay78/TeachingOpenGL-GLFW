@@ -140,6 +140,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="frag_1.fs" />
+    <None Include="frag_2.fs" />
+    <None Include="frag_2.vs" />
+    <None Include="frag_3.fs" />
     <None Include="ver_1.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

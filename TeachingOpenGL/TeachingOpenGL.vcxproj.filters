@@ -52,5 +52,14 @@
     <None Include="frag_1.fs">
       <Filter>Исходные файлы\shaders\fragment</Filter>
     </None>
+    <None Include="frag_2.fs">
+      <Filter>Исходные файлы\shaders\fragment</Filter>
+    </None>
+    <None Include="frag_2.vs">
+      <Filter>Исходные файлы\shaders\vertex</Filter>
+    </None>
+    <None Include="frag_3.fs">
+      <Filter>Исходные файлы\shaders\fragment</Filter>
+    </None>
   </ItemGroup>
 </Project>
